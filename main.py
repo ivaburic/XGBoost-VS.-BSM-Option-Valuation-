@@ -11,12 +11,10 @@ from xgb_model import XGBoostModel, EvaluationMetrics
 
 # Helpers for underlying history data
 def realized_vol(returns, window=20):
-    """Rolling realized volatility (annualized)."""
     return returns.rolling(window=window).std() * np.sqrt(252)
 
 
 def fetch_tsla_history(start="2020-01-01"):
-    """Download TSLA daily history and compute realized vols."""
     df = yf.download("TSLA", start=start, auto_adjust=False, progress=False)
 
     # Normalize columns in case of multiindex
@@ -81,7 +79,7 @@ def load_vol_surface(path):
     strike_row = surf.iloc[0]
     strike_buckets = strike_row[bucket_cols].astype(float).values
 
-    # Implied vols (percent)
+    # Implied vols 
     iv_row = surf.iloc[1]
     iv_buckets = iv_row[bucket_cols].astype(float).values / 100.0
 
@@ -219,6 +217,7 @@ def rmse_by_moneyness(df_test, bs_pred, xgb_pred, fname):
         mask = buckets == label
         if mask.sum() == 0:
             continue
+            
         labels.append(str(label))
         rmse_bs.append(EvaluationMetrics.root_mean_squared_error(true[mask], bs_pred[mask]))
         rmse_xgb.append(EvaluationMetrics.root_mean_squared_error(true[mask], xgb_pred[mask]))
