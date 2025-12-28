@@ -1,12 +1,3 @@
-"""
-CS559 XGBOOST VS. BLACK-SCHOLES MODEL FOR OPTION VALUATION
-"I pledge my honor that I have abided by the Stevens Honor System." - Iva Buric 
-12/18/2025
-
-TSLA option valuation:
-Black-Scholes baseline vs XGBoost residual mid-price model, using Bloomberg option chain + volatility surface.
-"""
-
 import os
 import numpy as np
 import pandas as pd
