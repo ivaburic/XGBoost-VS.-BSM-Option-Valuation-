@@ -3,10 +3,6 @@ from scipy.stats import norm
 
 
 class BlackScholesModel:
-    """
-    Black-Scholes pricing for European calls and puts.
-    """
-
     @staticmethod
     def bsm_price(S, K, T, r, sigma, option_type="call"):
         S = np.asarray(S, dtype=float)
