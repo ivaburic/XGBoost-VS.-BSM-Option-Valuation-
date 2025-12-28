@@ -30,8 +30,6 @@ def fetch_tsla_history(start="2020-01-01"):
     df.dropna(inplace=True)
     return df
 
-
-# Bloomberg data loaders
 def load_bloomberg_chain(path):
     df = pd.read_csv(path)
 
@@ -91,10 +89,6 @@ def load_vol_surface(path):
 
 
 def approximate_iv_from_surface(strikes, surface_info):
-    """
-    Approximate strike-specific implied vol by linearly interpolating
-    over the moneyness buckets in the surface.
-    """
     K = np.asarray(strikes, dtype=float)
     K_b = surface_info["strike_buckets"]
     iv_b = surface_info["iv_buckets"]
@@ -103,17 +97,8 @@ def approximate_iv_from_surface(strikes, surface_info):
     iv = np.interp(K, K_b, iv_b, left=iv_b[0], right=iv_b[-1])
     return iv
 
-
 # Data Preparation and Preprocessing
-
 def build_tsla_option_dataset(chain_csv, surface_csv):
-    """
-    Build cleaned TSLA option dataset plus BSM baseline, using:
-    - Yahoo Finance for underlying history and realized volatility (Analysis of the underlying asset)
-    - Bloomberg chain CSV for cross-sectional options.
-    - Bloomberg vol-surface CSV to approximate strike-specific implied vol
-      as an extra feature (not used in BSM sigma).
-    """
     # Underlying history
     hist = fetch_tsla_history()
     last_date = hist.index[-1]
@@ -179,11 +164,6 @@ def build_tsla_option_dataset(chain_csv, surface_csv):
 
 
 def prepare_features_and_residual_target(df):
-    """
-    Features for XGBoost and residual target.
-    Target is residual r = mid - bs_price so the model learns
-    corrections around BSM rather than reconstructing the full price.
-    """
     feature_names = [
         "S",
         "strike",
@@ -298,10 +278,6 @@ def cv_boxplot(rmse_bs, rmse_xgb, fname):
 
 
 def error_heatmaps(df, bs_pred, xgb_pred, prefix):
-    """
-    Moneyness x maturity MAE heatmaps for BSM vs XGB.
-    Each cell is the MAE in a (T, S/K) bin.
-    """
     ensure_fig_dir()
     true = df["mid"].values
     m = df["S"] / df["strike"]
@@ -465,11 +441,7 @@ def correlation_heatmap(X, fname):
     print(f"Saved {out}")
 
 
-def validation_curve(X_train, X_test,
-                          y_resid_train, y_resid_test,
-                          bs_train, bs_test,
-                          true_mid_train, true_mid_test,
-                          base_params, fname):
+def validation_curve(X_train, X_test, y_resid_train, y_resid_test, bs_train, bs_test, true_mid_train, true_mid_test, base_params, fname):
     ensure_fig_dir()
 
     n_estimators_grid = [50, 100, 200, 400, 600]
@@ -515,8 +487,7 @@ def experiment_single_split(chain_csv, surface_csv):
     X, y_resid, y_mid, bs_all, feature_names = prepare_features_and_residual_target(df)
     correlation_heatmap(X, "fig_feature_correlation_tsla.png")
 
-    X_train, X_test, y_resid_train, y_resid_test = train_test_split(
-        X, y_resid, test_size=0.2, random_state=42)
+    X_train, X_test, y_resid_train, y_resid_test = train_test_split(X, y_resid, test_size=0.2, random_state=42)
 
     true_mid_train = df.loc[X_train.index, "mid"].values
     true_mid_test = df.loc[X_test.index, "mid"].values
